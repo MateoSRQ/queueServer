@@ -498,8 +498,17 @@ class ApiController {
 
     async nodos({params, request, response, view, auth, session}) {
         try {
-            let nodos = await mongoNodo.find();
-            return response.ok(nodos);
+            let query = request.get();
+            let {size=50, page=1} = query;
+            let total = await mongoNodo.count();
+            let nodos = await mongoNodo.find().limit(size).skip((page - 1)*size);
+            return response.ok({
+                page: parseInt(page),
+                size: size,
+                total: total,
+                pages: Math.ceil(total/size),
+                data: nodos,
+            });
         }
         catch (e) {
             console.log(e);
@@ -653,18 +662,18 @@ class ApiController {
         catch (e) {
         }
     }
-
+  /*
     async nodos({params, request, response, view, auth, session}) {
         performance.mark('Beginning sanity check');
         try {
             var query = request.post();
+
             let results = await mongoNodo.find({
                 sede_id: 1,
                 //"cola.ticket": query.ticket,
                 //estado: 'E'
             }, {_id: 1, id: 1, estado: 1, nombre: 1, codigo: 1, cola: 1});
             performance.mark('Ending sanity check');
-            //response.ok(pack.pack(results));
             performance.mark('Beginning filtering check');
             for (let index in results) {
                 results[index].cola = _.filter(results[index].cola, item => 'E');
@@ -682,7 +691,7 @@ class ApiController {
             response.internalServerError(e);
         }
     }
-
+*/
 }
 
 module.exports = ApiController
