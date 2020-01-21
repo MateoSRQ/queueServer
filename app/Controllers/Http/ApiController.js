@@ -496,6 +496,17 @@ class ApiController {
 
     }
 
+    async nodos({params, request, response, view, auth, session}) {
+        try {
+            let nodos = await mongoNodo.find();
+            return response.ok(nodos);
+        }
+        catch (e) {
+            console.log(e);
+            return response.badRequest(e);
+        }
+    }
+
     async registro({params, request, response, view, auth, session}) {
         try {
             let query = request.post();
