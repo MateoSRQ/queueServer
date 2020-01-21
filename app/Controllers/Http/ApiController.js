@@ -24,21 +24,6 @@ const obs = new PerformanceObserver((list) => {
 });
 obs.observe({entryTypes: ['measure'], buffered: false});
 
-async function* asyncGenerator() {
-    var i = 0;
-    while (i < 100) {
-        yield i++;
-    }
-}
-
-async function* asyncGenerator2() {
-    var end = parseInt(Math.random() * (100 - 6) + 6);
-    var i = 0
-    while (i < end) {
-        yield i++;
-    }
-}
-
 mongoose.connect('mongodb://localhost:27017/test', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -66,17 +51,28 @@ const mongoExamen = mongoose.model('examen', {
     }]
 })
 const mongoPaciente = mongoose.model('paciente', {
-    nombre: String,
-    examenes: [Object],
     ticket: String,
-    indice: Number,
-    sede_id: Number,
-    estado: String,
-    tiempo_espera: Number,
-    tiempo_atencion: Number,
-    tiempo_llamada: Number,
-    dtCita: Number,
-    dtCheckin: Number,
+    sede: String,
+    dni: String,
+    nombre: String,
+    sexo: String,
+    edad: Number,
+    celular: String,
+    correo: String,
+    dtCita: String,
+    dtCheckin: String,
+    episodios: [{
+        codigoEpisodio: String,
+        titular: String,
+        unidad: String,
+        contrata: String,
+        puesto: String,
+        Protocolo: String,
+        TipoExamen: String,
+        TiempoTeorico: Number,
+        pruebas: Array,
+    }]
+
 
 });
 const mongoUser = mongoose.model('user', {
@@ -501,6 +497,40 @@ class ApiController {
     }
 
     async registro({params, request, response, view, auth, session}) {
+        try {
+            let query = request.post();
+            performance.mark('Beginning sanity check');
+
+            let object = _.clone(query)
+            let allPruebas = [];
+            object.dtCita = moment(object.dtCita).format('YYYYMMDDhhmmss');
+            object.dtCheckin = moment(object.dtCheckin).format('YYYYMMDDhhmmss');
+            for (let episodio in object.episodios) {
+                let pruebas = [];
+
+                for (let prueba of object.episodios[episodio].pruebas) {
+                    let _prueba = await mongoExamen.findOne({codigo: prueba});
+                    if (_prueba) {
+                        pruebas.push(_prueba);
+                    }
+                }
+                allPruebas = _.uniq(_.concat(allPruebas, pruebas));
+                object.episodios[episodio].pruebas = pruebas;
+            }
+            object.allPruebas = allPruebas;
+            await mongoPaciente.create(object);
+            performance.mark('Ending sanity check');
+            performance.measure('Check:', 'Beginning sanity check', 'Ending sanity check');
+
+            return response.ok(object);
+        }
+        catch (e) {
+            console.log(e);
+            return response.badRequest(e);
+        }
+    }
+    /*
+    async registro({params, request, response, view, auth, session}) {
         const uuid = uuidv4()
         LoggerApi.transport(transport).debug(moment().format('YYYY-MM-DD hh:mm:ss:SSS') + ' - ' + 'ApiController.registro start ' + uuid)
         try {
@@ -527,7 +557,7 @@ class ApiController {
             // return false
         }
     }
-
+    */
     async checkin({params, request, response, view, auth, session}) {
         try {
             var query = request.post();
