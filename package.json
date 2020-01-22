@@ -32,6 +32,7 @@
     "axios": "^0.19.0",
     "compressed-json": "^1.0.15",
     "faker": "^4.1.0",
+    "flatted": "^2.0.1",
     "jsonpack": "^1.1.5",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",

@@ -12,7 +12,7 @@ const {performance, PerformanceObserver} = require('perf_hooks');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const pack = require('msgpack-lite');
-
+const {parse, stringify} = require('flatted/cjs');
 
 const faker = require('faker');
 const _ = require('lodash');
@@ -500,15 +500,28 @@ class ApiController {
         try {
             let query = request.get();
             let {size=50, page=1} = query;
-            let total = await mongoNodo.count();
-            let nodos = await mongoNodo.find().limit(size).skip((page - 1)*size);
-            return response.ok({
+            let total = await mongoNodo.countDocuments();
+            let nodos = await mongoNodo.find({}, {
+                _id: 1,
+                id: 1,
+                sede_id: 1,
+                nombre: 1,
+                area: 1,
+                color: 1,
+                codigo: 1,
+                estado: 1,
+                grupo_nodo: 1
+            }).limit(size).skip((page - 1)*size);
+
+            let result ={
                 page: parseInt(page),
                 size: size,
                 total: total,
                 pages: Math.ceil(total/size),
-                data: nodos,
-            });
+                data: nodos
+            };
+
+            return response.ok(result);
         }
         catch (e) {
             console.log(e);
