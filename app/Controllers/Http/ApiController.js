@@ -12,7 +12,6 @@ const {performance, PerformanceObserver} = require('perf_hooks');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const pack = require('msgpack-lite');
-const {parse, stringify} = require('flatted/cjs');
 
 const faker = require('faker');
 const _ = require('lodash');
