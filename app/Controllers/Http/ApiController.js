@@ -498,7 +498,7 @@ class ApiController {
     async nodos({params, request, response, view, auth, session}) {
         try {
             let query = request.get();
-            let {size=50, page=1} = query;
+            let {size=10, page=1} = query;
             let total = await mongoNodo.countDocuments();
             let nodos = await mongoNodo.find({}, {
                 _id: 1,
