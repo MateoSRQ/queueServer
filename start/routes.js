@@ -23,6 +23,7 @@ Route.post('api/login', 'ApiController.login')
 Route.get('api/sedes', 'ApiController.sedes')
 Route.get('api/nodos/:id', 'ApiController.nodo')
 Route.get('api/nodos', 'ApiController.nodos')
+Route.get('api/fullnodos', 'ApiController.fullNodos')
 
 Route.post('api/registro', 'ApiController.registro');
 Route.post('api/checkin',  'ApiController.checkin');

@@ -528,6 +528,28 @@ class ApiController {
         }
     }
 
+    async fullNodos({params, request, response, view, auth, session}) {
+        try {
+            let query = request.get();
+            let sedes = await mongoSede.find();
+            let result = []
+            for (let sede in sedes) {
+                console.log(sede)
+                let _sede = sedes[sede].toObject();
+                let nodos = await mongoNodo.find({sede_id: sedes[sede].id}, {pacientes: 0, cola: 0});
+                _sede.nodos = nodos
+                result.push(_sede);
+            }
+
+            return response.ok(result);
+
+        }
+        catch (e) {
+            console.log(e);
+            return response.badRequest(e);
+        }
+    }
+
     async nodo({params, request, response, view, auth, session}) {
         try {
             let query = params;
