@@ -528,6 +528,20 @@ class ApiController {
         }
     }
 
+    async examenes({params, request, response, view, auth, session}) {
+        try {
+            let query = request.get();
+            let examenes = await mongoExamen.find({tipoExamen: "Prestacion Presencial"}, {requerimientos: 0});
+            console.log(examenes.length)
+
+            return response.ok(examenes);
+        }
+        catch (e) {
+            console.log(e);
+            return response.badRequest(e);
+        }
+    }
+
     async fullNodos({params, request, response, view, auth, session}) {
         try {
             let query = request.get();
