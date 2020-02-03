@@ -15,6 +15,7 @@ const pack = require('msgpack-lite');
 
 const faker = require('faker');
 const _ = require('lodash');
+const jsonpack = require('jsonpack');
 
 
 const obs = new PerformanceObserver((list) => {
@@ -545,17 +546,67 @@ class ApiController {
     async fullNodos({params, request, response, view, auth, session}) {
         try {
             let query = request.get();
-            let sedes = await mongoSede.find();
+            console.log(query.sede);
             let result = []
-            for (let sede in sedes) {
-                console.log(sede)
-                let _sede = sedes[sede].toObject();
-                let nodos = await mongoNodo.find({sede_id: sedes[sede].id}, {pacientes: 0, cola: 0});
-                _sede.nodos = nodos
-                result.push(_sede);
-            }
+            let nodos = await mongoNodo.find({sede_id: query.sede}, {pacientes: 0, cola: 0});
+            return response.ok(nodos);
 
-            return response.ok(result);
+        }
+        catch (e) {
+            console.log(e);
+            return response.badRequest(e);
+        }
+    }
+
+    async changeNodeStatus ({params, request, response, view, auth, session}) {
+        try {
+            let query = request.post();
+            if (query.id && query.codigo) {
+                performance.mark('Beginning sanity check');
+                let nodo = await mongoNodo.findOne({_id: query.id}, {pacientes: 0, cola: 0});
+                if (nodo) {
+                    let nodo_examenes = nodo.examenes;
+                    let examen = _.remove(nodo_examenes, function(o) { return o.codigo == query.codigo });
+
+                    if (!_.isEmpty(examen)) {
+                        await mongoNodo.updateOne({_id: query.id}, {
+                            examenes: nodo_examenes
+                        })
+                        //let nodos = await mongoNodo.find({sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                        let nodos = await mongoNodo.findOne({_id: query.id, sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                        nodos = jsonpack.pack(JSON.parse(JSON.stringify(nodos)));
+                        performance.mark('Ending sanity check');
+                        performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+                        return response.ok(nodos);
+                    }
+                    else {
+                        examen = await mongoExamen.findOne({codigo: query.codigo});
+                        if (examen) {
+                            await mongoNodo.updateOne(
+                                {_id: query.id},
+                                { $push: { examenes: examen }}
+                            );
+
+                            //let nodos = await mongoNodo.find({sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                            let nodos = await mongoNodo.findOne({_id: query.id, sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                            nodos = jsonpack.pack(JSON.parse(JSON.stringify(nodos)));
+                            performance.mark('Ending sanity check');
+                            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+                            return response.ok(nodos);
+
+                        }
+                        else {
+                            return response.badRequest(null);
+                        }
+                    }
+                }
+                else {
+                    return response.badRequest(null);
+                }
+            }
+            else {
+                return response.badRequest(null);
+            }
 
         }
         catch (e) {
@@ -721,6 +772,99 @@ class ApiController {
             return results;
         }
         catch (e) {
+        }
+    }
+
+    async fullNodos_v2({params, request, response, view, auth, session}) {
+        try {
+            performance.mark('Beginning sanity check');
+            let query = request.get();
+            let result = []
+            let nodos    = await mongoNodo.find({sede_id: query.sede}, {pacientes: 0, cola: 0}).lean();
+            let examenes = await mongoExamen.find({});
+
+            let _examenes = {};
+            for (let examen in examenes) {
+                 _examenes[examenes[examen].codigo] = examenes[examen];
+            }
+            //return response.ok(_examenes);
+
+            //let _nodos =  nodos.toObject() //_.clone(nodos);
+            for (let nodo in nodos) {
+                for (let ex of nodos[nodo].examenes) {
+                    if (_examenes[ex.codigo]) {
+                        //console.log('-' + _examenes[ex.codigo]);
+                        //console.log(_nodos[nodo])
+                        nodos[nodo][ex.codigo] =  true
+                    }
+                    delete nodos[nodo].examenes
+                }
+            }
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+
+            return response.ok(nodos);
+
+        }
+        catch (e) {
+            console.log(e);
+            return response.badRequest(e);
+        }
+    }
+    async changeNodeStatus_v2 ({params, request, response, view, auth, session}) {
+        try {
+            let query = request.post();
+            if (query.id && query.codigo) {
+                performance.mark('Beginning sanity check');
+                let nodo = await mongoNodo.findOne({_id: query.id}, {pacientes: 0, cola: 0});
+                if (nodo) {
+                    let nodo_examenes = nodo.examenes;
+                    let examen = _.remove(nodo_examenes, function(o) { return o.codigo == query.codigo });
+
+                    if (!_.isEmpty(examen)) {
+                        await mongoNodo.updateOne({_id: query.id}, {
+                            examenes: nodo_examenes
+                        })
+                        //let nodos = await mongoNodo.find({sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                        let nodos = await mongoNodo.findOne({_id: query.id, sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                        nodos = jsonpack.pack(JSON.parse(JSON.stringify(nodos)));
+                        performance.mark('Ending sanity check');
+                        performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+                        return response.ok(nodos);
+                    }
+                    else {
+                        examen = await mongoExamen.findOne({codigo: query.codigo});
+                        if (examen) {
+                            await mongoNodo.updateOne(
+                                {_id: query.id},
+                                { $push: { examenes: examen }}
+                            );
+
+                            //let nodos = await mongoNodo.find({sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                            let nodos = await mongoNodo.findOne({_id: query.id, sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                            nodos = jsonpack.pack(JSON.parse(JSON.stringify(nodos)));
+                            performance.mark('Ending sanity check');
+                            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+                            return response.ok(nodos);
+
+                        }
+                        else {
+                            return response.badRequest(null);
+                        }
+                    }
+                }
+                else {
+                    return response.badRequest(null);
+                }
+            }
+            else {
+                return response.badRequest(null);
+            }
+
+        }
+        catch (e) {
+            console.log(e);
+            return response.badRequest(e);
         }
     }
   /*

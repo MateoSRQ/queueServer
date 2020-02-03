@@ -29,3 +29,8 @@ Route.get('api/examenes', 'ApiController.examenes')
 Route.post('api/registro', 'ApiController.registro');
 Route.post('api/checkin',  'ApiController.checkin');
 Route.get('api/paciente', 'ApiController.paciente');
+
+Route.post('api/changeNodeStatus', 'ApiController.changeNodeStatus');
+
+Route.post('api/v2/changeNodeStatus', 'ApiController.changeNodeStatus_v2');
+Route.get('api/v2/fullnodos', 'ApiController.fullNodos_v2')
