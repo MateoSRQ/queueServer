@@ -298,6 +298,7 @@ class ApiController {
             return response.internalServerError(e)
         }
     }
+
     /*
     async nodos({params, request, response, view, auth, session}) {
         console.log(params.id)
@@ -396,7 +397,7 @@ class ApiController {
             let nodos = await mongoNodo.find();
             for (let nodo of nodos) {
                 await mongoNodo.updateOne({_id: nodo._id}, {
-                   estado: 'N'
+                    estado: 'N'
                 })
             }
             // let pacientes = await mongoPaciente.find({});
@@ -420,8 +421,7 @@ class ApiController {
             //         indice: -(Math.abs(parseInt(now1) - parseInt(now2)))
             //     }})
             // }
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e)
         }
         // let pos = ['A', 'P', 'E', 'X', 'C']
@@ -499,7 +499,7 @@ class ApiController {
     async nodos({params, request, response, view, auth, session}) {
         try {
             let query = request.get();
-            let {size=10, page=1} = query;
+            let {size = 10, page = 1} = query;
             let total = await mongoNodo.countDocuments();
             let nodos = await mongoNodo.find({}, {
                 _id: 1,
@@ -511,19 +511,18 @@ class ApiController {
                 codigo: 1,
                 estado: 1,
                 grupo_nodo: 1
-            }).limit(size).skip((page - 1)*size);
+            }).limit(size).skip((page - 1) * size);
 
-            let result ={
+            let result = {
                 page: parseInt(page),
                 size: size,
                 total: total,
-                pages: Math.ceil(total/size),
+                pages: Math.ceil(total / size),
                 data: nodos
             };
 
             return response.ok(result);
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e);
             return response.badRequest(e);
         }
@@ -536,8 +535,7 @@ class ApiController {
             console.log(examenes.length)
 
             return response.ok(examenes);
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e);
             return response.badRequest(e);
         }
@@ -551,14 +549,13 @@ class ApiController {
             let nodos = await mongoNodo.find({sede_id: query.sede}, {pacientes: 0, cola: 0});
             return response.ok(nodos);
 
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e);
             return response.badRequest(e);
         }
     }
 
-    async changeNodeStatus ({params, request, response, view, auth, session}) {
+    async changeNodeStatus({params, request, response, view, auth, session}) {
         try {
             let query = request.post();
             if (query.id && query.codigo) {
@@ -566,50 +563,53 @@ class ApiController {
                 let nodo = await mongoNodo.findOne({_id: query.id}, {pacientes: 0, cola: 0});
                 if (nodo) {
                     let nodo_examenes = nodo.examenes;
-                    let examen = _.remove(nodo_examenes, function(o) { return o.codigo == query.codigo });
+                    let examen = _.remove(nodo_examenes, function (o) {
+                        return o.codigo == query.codigo
+                    });
 
                     if (!_.isEmpty(examen)) {
                         await mongoNodo.updateOne({_id: query.id}, {
                             examenes: nodo_examenes
                         })
                         //let nodos = await mongoNodo.find({sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
-                        let nodos = await mongoNodo.findOne({_id: query.id, sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                        let nodos = await mongoNodo.findOne({
+                            _id: query.id,
+                            sede_id: nodo.sede_id
+                        }, {pacientes: 0, cola: 0});
                         nodos = jsonpack.pack(JSON.parse(JSON.stringify(nodos)));
                         performance.mark('Ending sanity check');
                         performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
                         return response.ok(nodos);
-                    }
-                    else {
+                    } else {
                         examen = await mongoExamen.findOne({codigo: query.codigo});
                         if (examen) {
                             await mongoNodo.updateOne(
                                 {_id: query.id},
-                                { $push: { examenes: examen }}
+                                {$push: {examenes: examen}}
                             );
 
                             //let nodos = await mongoNodo.find({sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
-                            let nodos = await mongoNodo.findOne({_id: query.id, sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                            let nodos = await mongoNodo.findOne({
+                                _id: query.id,
+                                sede_id: nodo.sede_id
+                            }, {pacientes: 0, cola: 0});
                             nodos = jsonpack.pack(JSON.parse(JSON.stringify(nodos)));
                             performance.mark('Ending sanity check');
                             performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
                             return response.ok(nodos);
 
-                        }
-                        else {
+                        } else {
                             return response.badRequest(null);
                         }
                     }
-                }
-                else {
+                } else {
                     return response.badRequest(null);
                 }
-            }
-            else {
+            } else {
                 return response.badRequest(null);
             }
 
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e);
             return response.badRequest(e);
         }
@@ -621,8 +621,7 @@ class ApiController {
 
             let result = await mongoNodo.findOne({_id: query.id});
             return response.ok(result);
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e);
             return response.badRequest(e);
         }
@@ -655,12 +654,12 @@ class ApiController {
             performance.measure('Check:', 'Beginning sanity check', 'Ending sanity check');
 
             return response.ok(object);
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e);
             return response.badRequest(e);
         }
     }
+
     /*
     async registro({params, request, response, view, auth, session}) {
         const uuid = uuidv4()
@@ -770,8 +769,7 @@ class ApiController {
             performance.mark('Ending sanity check');
             performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
             return results;
-        }
-        catch (e) {
+        } catch (e) {
         }
     }
 
@@ -780,12 +778,12 @@ class ApiController {
             performance.mark('Beginning sanity check');
             let query = request.get();
             let result = []
-            let nodos    = await mongoNodo.find({sede_id: query.sede}, {pacientes: 0, cola: 0}).lean();
+            let nodos = await mongoNodo.find({sede_id: query.sede}, {pacientes: 0, cola: 0}).lean();
             let examenes = await mongoExamen.find({});
 
             let _examenes = {};
             for (let examen in examenes) {
-                 _examenes[examenes[examen].codigo] = examenes[examen];
+                _examenes[examenes[examen].codigo] = examenes[examen];
             }
             //return response.ok(_examenes);
 
@@ -795,7 +793,7 @@ class ApiController {
                     if (_examenes[ex.codigo]) {
                         //console.log('-' + _examenes[ex.codigo]);
                         //console.log(_nodos[nodo])
-                        nodos[nodo][ex.codigo] =  true
+                        nodos[nodo][ex.codigo] = true
                     }
                     delete nodos[nodo].examenes
                 }
@@ -805,13 +803,13 @@ class ApiController {
 
             return response.ok(nodos);
 
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e);
             return response.badRequest(e);
         }
     }
-    async changeNodeStatus_v2 ({params, request, response, view, auth, session}) {
+
+    async changeNodeStatus_v2({params, request, response, view, auth, session}) {
         try {
             let query = request.post();
             if (query.id && query.codigo) {
@@ -819,84 +817,107 @@ class ApiController {
                 let nodo = await mongoNodo.findOne({_id: query.id}, {pacientes: 0, cola: 0});
                 if (nodo) {
                     let nodo_examenes = nodo.examenes;
-                    let examen = _.remove(nodo_examenes, function(o) { return o.codigo == query.codigo });
+                    let examen = _.remove(nodo_examenes, function (o) {
+                        return o.codigo == query.codigo
+                    });
 
                     if (!_.isEmpty(examen)) {
                         await mongoNodo.updateOne({_id: query.id}, {
                             examenes: nodo_examenes
                         })
                         //let nodos = await mongoNodo.find({sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
-                        let nodos = await mongoNodo.findOne({_id: query.id, sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                        let nodos = await mongoNodo.findOne({
+                            _id: query.id,
+                            sede_id: nodo.sede_id
+                        }, {pacientes: 0, cola: 0});
                         nodos = jsonpack.pack(JSON.parse(JSON.stringify(nodos)));
                         performance.mark('Ending sanity check');
                         performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
                         return response.ok(nodos);
-                    }
-                    else {
+                    } else {
                         examen = await mongoExamen.findOne({codigo: query.codigo});
                         if (examen) {
                             await mongoNodo.updateOne(
                                 {_id: query.id},
-                                { $push: { examenes: examen }}
+                                {$push: {examenes: examen}}
                             );
 
                             //let nodos = await mongoNodo.find({sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
-                            let nodos = await mongoNodo.findOne({_id: query.id, sede_id: nodo.sede_id}, {pacientes: 0, cola: 0});
+                            let nodos = await mongoNodo.findOne({
+                                _id: query.id,
+                                sede_id: nodo.sede_id
+                            }, {pacientes: 0, cola: 0});
                             nodos = jsonpack.pack(JSON.parse(JSON.stringify(nodos)));
                             performance.mark('Ending sanity check');
                             performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
                             return response.ok(nodos);
 
-                        }
-                        else {
+                        } else {
                             return response.badRequest(null);
                         }
                     }
-                }
-                else {
+                } else {
                     return response.badRequest(null);
                 }
-            }
-            else {
+            } else {
                 return response.badRequest(null);
             }
 
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e);
             return response.badRequest(e);
         }
     }
-  /*
-    async nodos({params, request, response, view, auth, session}) {
+
+    async sedes_v2({params, request, response, view, auth, session}) {
         performance.mark('Beginning sanity check');
         try {
-            var query = request.post();
-
-            let results = await mongoNodo.find({
-                sede_id: 1,
-                //"cola.ticket": query.ticket,
-                //estado: 'E'
-            }, {_id: 1, id: 1, estado: 1, nombre: 1, codigo: 1, cola: 1});
-            performance.mark('Ending sanity check');
-            performance.mark('Beginning filtering check');
-            for (let index in results) {
-                results[index].cola = _.filter(results[index].cola, item => 'E');
-                results[index].cola = _.orderBy(results[index].cola, ['indice'], ['desc']);
+            let sedes = await mongoSede.find().lean();
+            for (let sede in sedes) {
+                  sedes[sede].nodos = await mongoNodo.find({sede_id: sedes[sede].id}).lean();
             }
-            performance.mark('Ending filtering check');
+            sedes = jsonpack.pack(JSON.parse(JSON.stringify(sedes)));
             performance.mark('Ending sanity check');
-            performance.measure('Filter validation', 'Beginning filtering check', 'Ending filtering check');
             performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
-
-            response.ok(results);
-        }
-        catch(e) {
-            console.log(e);
-            response.internalServerError(e);
+            return response.ok(sedes)
+        } catch (e) {
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+            console.log(e)
+            return response.internalServerError(e)
         }
     }
-*/
+
+    /*
+      async nodos({params, request, response, view, auth, session}) {
+          performance.mark('Beginning sanity check');
+          try {
+              var query = request.post();
+
+              let results = await mongoNodo.find({
+                  sede_id: 1,
+                  //"cola.ticket": query.ticket,
+                  //estado: 'E'
+              }, {_id: 1, id: 1, estado: 1, nombre: 1, codigo: 1, cola: 1});
+              performance.mark('Ending sanity check');
+              performance.mark('Beginning filtering check');
+              for (let index in results) {
+                  results[index].cola = _.filter(results[index].cola, item => 'E');
+                  results[index].cola = _.orderBy(results[index].cola, ['indice'], ['desc']);
+              }
+              performance.mark('Ending filtering check');
+              performance.mark('Ending sanity check');
+              performance.measure('Filter validation', 'Beginning filtering check', 'Ending filtering check');
+              performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+
+              response.ok(results);
+          }
+          catch(e) {
+              console.log(e);
+              response.internalServerError(e);
+          }
+      }
+  */
 }
 
 module.exports = ApiController

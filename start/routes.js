@@ -34,3 +34,4 @@ Route.post('api/changeNodeStatus', 'ApiController.changeNodeStatus');
 
 Route.post('api/v2/changeNodeStatus', 'ApiController.changeNodeStatus_v2');
 Route.get('api/v2/fullnodos', 'ApiController.fullNodos_v2')
+Route.get('api/v2/sedes', 'ApiController.sedes_v2')
