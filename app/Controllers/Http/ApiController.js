@@ -869,12 +869,48 @@ class ApiController {
         }
     }
 
+    async examenes_v2({params, request, response, view, auth, session}) {
+        performance.mark('Beginning sanity check');
+        try {
+            let examenes = await mongoExamen.find(
+                {
+                    tipoExamen: 'Prestacion Presencial'
+                },
+                {
+                    requerimientos: 0
+                }
+            ).lean();
+            examenes = _.groupBy(examenes, (examen) => { return examen.codigo.substr(0, 3)})
+//            sedes = jsonpack.pack(JSON.parse(JSON.stringify(sedes)));
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+            return response.ok(examenes)
+        }
+        catch (e) {
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+            console.log(e)
+            return response.internalServerError(e)
+        }
+    }
+
     async sedes_v2({params, request, response, view, auth, session}) {
         performance.mark('Beginning sanity check');
         try {
             let sedes = await mongoSede.find().lean();
             for (let sede in sedes) {
-                  sedes[sede].nodos = await mongoNodo.find({sede_id: sedes[sede].id}).lean();
+                let nodos = await mongoNodo.find(
+                    {sede_id: sedes[sede].id},
+                    {_id: 1, codigo: 1, grupo_nodo: 1}
+                    ).lean();
+                sedes[sede].nodos = JSON.parse(JSON.stringify(_.groupBy(nodos, 'grupo_nodo')));
+
+
+
+                // sedes[sede].nodos = await mongoNodo.find(
+                //     {sede_id: sedes[sede].id},
+                //     {_id: 1, codigo: 1, grupo_nodo: 1}
+                //     ).lean();
             }
             sedes = jsonpack.pack(JSON.parse(JSON.stringify(sedes)));
             performance.mark('Ending sanity check');
