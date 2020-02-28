@@ -85,7 +85,8 @@ const mongoUser = mongoose.model('user', {
 });
 const mongoSede = mongoose.model('sede', {
     id: Number,
-    nombre: String
+    nombre: String,
+    descripcion: String,
 })
 const mongoNodo = mongoose.model('nodo', {
     id: Number,
@@ -916,6 +917,42 @@ class ApiController {
             performance.mark('Ending sanity check');
             performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
             return response.ok(sedes)
+        } catch (e) {
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+            console.log(e)
+            return response.internalServerError(e)
+        }
+    }
+
+    async sedes_v3({params, request, response, view, auth, session}) {
+        performance.mark('Beginning sanity check');
+        try {
+            let sedes = await mongoSede.find().lean();
+            sedes = jsonpack.pack(JSON.parse(JSON.stringify(sedes)));
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+            return response.ok(sedes)
+        } catch (e) {
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+            console.log(e)
+            return response.internalServerError(e)
+        }
+    }
+
+    async saveSede_v3({params, request, response, view, auth, session}) {
+        performance.mark('Beginning sanity check');
+        try {
+            let data = request.post();
+            console.log(data)
+            let model =  new mongoSede(data);
+            await model.save();
+            // let sedes = await mongoSede.find().lean();
+            // sedes = jsonpack.pack(JSON.parse(JSON.stringify(sedes)));
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+            // return response.ok(sedes)
         } catch (e) {
             performance.mark('Ending sanity check');
             performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
