@@ -948,11 +948,34 @@ class ApiController {
             console.log(data)
             let model =  new mongoSede(data);
             await model.save();
+            let sede = await mongoSede.findOne({_id: model._id}).lean();
             // let sedes = await mongoSede.find().lean();
             // sedes = jsonpack.pack(JSON.parse(JSON.stringify(sedes)));
             performance.mark('Ending sanity check');
             performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
-            // return response.ok(sedes)
+            return response.ok(sede)
+        } catch (e) {
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+            console.log(e)
+            return response.internalServerError(e)
+        }
+    }
+
+    async sede_v3({params, request, response, view, auth, session}) {
+        performance.mark('Beginning sanity check');
+        try {
+            let _id = params.id;
+            let sede = await mongoSede.findOne({_id: _id}).lean();
+            let nodos = await mongoNodo.find(
+                {sede_id: sede.id},
+                {_id: 1, codigo: 1, grupo_nodo: 1, estado: 1, id: 1 }
+            ).lean();
+            sede.nodos = JSON.parse(JSON.stringify(_.groupBy(nodos, 'grupo_nodo')));
+            sede = jsonpack.pack(JSON.parse(JSON.stringify(sede)));
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+            return response.ok(sede)
         } catch (e) {
             performance.mark('Ending sanity check');
             performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');

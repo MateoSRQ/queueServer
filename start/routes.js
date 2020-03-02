@@ -39,3 +39,4 @@ Route.get('api/v2/examenes', 'ApiController.examenes_v2')
 
 Route.get('api/v3/sedes', 'ApiController.sedes_v3')
 Route.post('api/v3/sedes', 'ApiController.saveSede_v3')
+Route.get('api/v3/sede/:id', 'ApiController.sede_v3')
