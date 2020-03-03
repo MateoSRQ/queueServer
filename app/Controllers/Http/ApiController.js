@@ -984,6 +984,32 @@ class ApiController {
         }
     }
 
+    async examenes_v3({params, request, response, view, auth, session}) {
+        performance.mark('Beginning sanity check');
+        try {
+            let examenes = await mongoExamen.find(
+                {
+                    tipoExamen: 'Prestacion Presencial'
+                },
+                {
+                    requerimientos: 0
+                }
+            ).lean();
+            examenes = _.groupBy(examenes, (examen) => { return examen.codigo.substr(0, 3)})
+//            sedes = jsonpack.pack(JSON.parse(JSON.stringify(sedes)));
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+            //examenes = jsonpack.pack(JSON.parse(JSON.stringify(examenes)));
+            return response.ok(examenes)
+        }
+        catch (e) {
+            performance.mark('Ending sanity check');
+            performance.measure('Inputs validation', 'Beginning sanity check', 'Ending sanity check');
+            console.log(e)
+            return response.internalServerError(e)
+        }
+    }
+
     /*
       async nodos({params, request, response, view, auth, session}) {
           performance.mark('Beginning sanity check');
