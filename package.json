@@ -29,7 +29,7 @@
     "@adonisjs/shield": "^1.0.8",
     "@adonisjs/websocket": "^1.0.12",
     "Logger": "^0.0.0",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "compressed-json": "^1.0.15",
     "faker": "^4.1.0",
     "flatted": "^2.0.1",
